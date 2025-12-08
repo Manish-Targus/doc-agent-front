@@ -1,0 +1,79 @@
+/* components/ActionCard.module.css */
+.card {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 2rem;
+    border: 1px solid var(--slate-100);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    text-align: left;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+}
+
+.iconWrapper {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .iconWrapper {
+    transform: scale(1.1);
+}
+
+/* Themes */
+.slate .iconWrapper {
+    background-color: var(--slate-100);
+    color: var(--slate-600);
+}
+
+.amber .iconWrapper {
+    background-color: var(--amber-100);
+    color: var(--amber-600);
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--slate-900);
+}
+
+.description {
+    color: var(--slate-500);
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background-color: var(--slate-900);
+    color: var(--white);
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.slate:hover .button {
+    background-color: var(--slate-600);
+}
+
+.amber:hover .button {
+    background-color: var(--amber-600);
+}

@@ -1,0 +1,94 @@
+/* components/LoginView.module.css */
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    padding: 1rem;
+}
+
+.card {
+    width: 100%;
+    max-width: 400px;
+    background: var(--white);
+    padding: 3rem;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.05);
+    border: 1px solid var(--slate-100);
+    text-align: center;
+}
+
+.logo {
+    width: 4rem;
+    height: 4rem;
+    background: var(--slate-900);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem auto;
+    color: var(--amber-200);
+    /* Accent color logo */
+    transform: rotate(-3deg);
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: var(--slate-500);
+    margin-bottom: 2rem;
+}
+
+.inputGroup {
+    text-align: left;
+    margin-bottom: 1rem;
+}
+
+.label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--slate-600);
+}
+
+.input {
+    width: 100%;
+    padding: 0.875rem;
+    border: 1px solid var(--slate-200);
+    border-radius: 0.75rem;
+    background: var(--slate-50);
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input:focus {
+    border-color: var(--slate-400);
+}
+
+.button {
+    width: 100%;
+    padding: 1rem;
+    background: var(--slate-900);
+    color: var(--white);
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.1s;
+}
+
+.button:active {
+    transform: scale(0.98);
+}
