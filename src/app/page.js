@@ -7,6 +7,8 @@ import UploadView from '../components/UploadView';
 import DashboardView from '../components/DashboardView';
 import CleanBackground from '../components/CleanBackground';
 import { api } from '../utils/api';
+import MainDashboard from './components/MainDashboard';
+import PdfViewer from './components/PdfViewer';
 
 export default function Home() {
   const [currentView, setCurrentView] = useState('login');
@@ -16,7 +18,7 @@ export default function Home() {
   useEffect(() => {
     const fetchCollections = async () => {
       try {
-        const data = await api.getCollections();
+        const data = await api.getBids();
         console.log("Fetched collections data:", data);
 
         let list = [];
@@ -55,7 +57,7 @@ export default function Home() {
     fetchCollections();
   }, []);
 
-  const handleLogin = () => setCurrentView('choice');
+  const handleLogin = () => setCurrentView('mainDashboard');
   const handleChoice = (choice) => setCurrentView(choice);
 
   const handleUploadComplete = (newDoc) => {
@@ -65,6 +67,7 @@ export default function Home() {
 
   const goToDashboard = () => setCurrentView('dashboard');
   const handleLogout = () => setCurrentView('login');
+const SAMPLE_PDF_URL = 'https://file-examples.com/storage/febb3a50a7693904695a3eb/2017/10/file-sample_150kB.pdf';
 
   return (
     <>
@@ -74,6 +77,7 @@ export default function Home() {
       </Head>
       <div className="relative min-h-screen font-sans text-slate-800 selection:bg-amber-100 selection:text-slate-900">
         <CleanBackground />
+        <h1 className='text-black'>{currentView}</h1>
         <div className="relative z-10 h-screen flex flex-col">
           {currentView === 'login' && <LoginView onLogin={handleLogin} />}
           {currentView === 'choice' && <ChoiceView onChoice={handleChoice} />}
@@ -85,7 +89,8 @@ export default function Home() {
             />
           )}
           {currentView === 'dashboard' && (
-            <DashboardView
+          
+           <DashboardView
               collections={collections}
               setCollections={setCollections}
               activeCollectionId={activeCollectionId}
@@ -94,8 +99,14 @@ export default function Home() {
               onNavigateToUpload={() => setCurrentView('upload')}
             />
           )}
+          {
+            currentView=="mainDashboard"&&(
+              <MainDashboard/>
+            )
+          }
         </div>
       </div>
     </>
+    
   );
 }

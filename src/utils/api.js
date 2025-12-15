@@ -30,6 +30,11 @@ export const api = {
         if (!response.ok) throw new Error('Failed to fetch collections');
         return response.json();
     },
+        getBids: async () => {
+        const response = await fetch(`${API_BASE_URL}/gem-bids`);
+        if (!response.ok) throw new Error('Failed to fetch bids');
+        return response.json();
+    },
     getCollectionInfo: async (name) => {
         const response = await fetch(`${API_BASE_URL}/collection/${name}`);
         if (!response.ok) throw new Error('Failed to fetch collection info');
@@ -61,9 +66,31 @@ export const api = {
         const response = await fetch(`${API_BASE_URL}/generate_rfp_summary`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ collection_name: collectionName }),
+            body: JSON.stringify({ collection: collectionName,  query: "Generate summary"
+ }),
         });
-        if (!response.ok) throw new Error('Summary generation failed');
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Summary generation failed: ${errorText}`);
+        }
+
+        // Get the blob from response
+        const blob = await response.blob();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `RFP_Summary_${collectionName || 'generated'}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        
+        // Clean up
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Return success message
+        return { success: true, message: 'File downloaded successfully' };
         return response.json();
     },
     search: async (query, collectionName) => {
