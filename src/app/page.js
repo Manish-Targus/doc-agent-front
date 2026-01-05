@@ -15,47 +15,47 @@ export default function Home() {
   const [collections, setCollections] = useState([]);
   const [activeCollectionId, setActiveCollectionId] = useState(null);
 
-  useEffect(() => {
-    const fetchCollections = async () => {
-      try {
-        const data = await api.getBids();
-        console.log("Fetched collections data:", data);
+  // useEffect(() => {
+  //   const fetchCollections = async () => {
+  //     try {
+  //       const data = await api.getBids();
+  //       console.log("Fetched collections data:", data);
 
-        let list = [];
-        if (Array.isArray(data)) {
-          list = data;
-        } else if (data && Array.isArray(data.collections)) {
-          list = data.collections;
-        } else {
-          console.warn("Unexpected collections format:", data);
-          setCollections([]);
-          return;
-        }
+  //       let list = [];
+  //       if (Array.isArray(data)) {
+  //         list = data;
+  //       } else if (data && Array.isArray(data.collections)) {
+  //         list = data.collections;
+  //       } else {
+  //         console.warn("Unexpected collections format:", data);
+  //         setCollections([]);
+  //         return;
+  //       }
 
-        const formattedCollections = list.map((item, index) => {
-          if (typeof item === 'string') {
-            return {
-              id: `col-${index}`,
-              name: item,
-              size: 'Unknown',
-              date: 'Unknown',
-              type: 'FILE'
-            };
-          }
-          // Ensure object has an ID
-          return {
-            ...item,
-            id: item.id || `col-${index}`
-          };
-        });
-        setCollections(formattedCollections);
-      } catch (error) {
-        console.error("Failed to fetch collections:", error);
-      }
-    };
+  //       const formattedCollections = list.map((item, index) => {
+  //         if (typeof item === 'string') {
+  //           return {
+  //             id: `col-${index}`,
+  //             name: item,
+  //             size: 'Unknown',
+  //             date: 'Unknown',
+  //             type: 'FILE'
+  //           };
+  //         }
+  //         // Ensure object has an ID
+  //         return {
+  //           ...item,
+  //           id: item.id || `col-${index}`
+  //         };
+  //       });
+  //       setCollections(formattedCollections);
+  //     } catch (error) {
+  //       console.error("Failed to fetch collections:", error);
+  //     }
+  //   };
 
-    fetchCollections();
-  }, []);
+  //   fetchCollections();
+  // }, []);
 
   const handleLogin = () => setCurrentView('mainDashboard');
   const handleChoice = (choice) => setCurrentView(choice);

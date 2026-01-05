@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { LayoutGrid, Loader2, LogIn } from 'lucide-react';
 import styles from './LoginView.module.css';
+import { api } from '../../utils/api';
 
 export default function LoginView({ onLogin }) {
     const [isLoading, setIsLoading] = useState(false);
@@ -11,7 +12,18 @@ export default function LoginView({ onLogin }) {
         setIsLoading(true);
         setTimeout(() => { setIsLoading(false); onLogin(); }, 800);
     };
-
+const handleLogin = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const email = formData.get('email');
+        const password = formData.get('password');
+        try {
+            await api.loginUser({ email, password });
+            onLogin();
+        } catch (error) {
+            console.error("Login failed:", error);
+        }
+    };
     return (
         <div className={styles.container}>
             <div className={styles.card}>
@@ -21,7 +33,7 @@ export default function LoginView({ onLogin }) {
                 <h2 className={styles.title}>Welcome back</h2>
                 <p className={styles.subtitle}>Log in to your dashboard</p>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleLogin}>
                     <div className={styles.inputGroup}>
                         <label className={styles.label}>Email</label>
                         <input type="email" className={styles.input} defaultValue="demo@docubot.ai" />

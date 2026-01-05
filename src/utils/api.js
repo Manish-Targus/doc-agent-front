@@ -1,4 +1,5 @@
-export const API_BASE_URL = 'http://localhost:9002';
+
+export const API_BASE_URL = 'http://192.168.1.245:9002';
 
 export const api = {
     upload: async (file, collectionName) => {
@@ -30,8 +31,14 @@ export const api = {
         if (!response.ok) throw new Error('Failed to fetch collections');
         return response.json();
     },
-        getBids: async () => {
-        const response = await fetch(`${API_BASE_URL}/gem-bids`);
+        getBids: async ({page}) => {
+            const url = new URL(`${API_BASE_URL}/gem-bids?page=${page || 1}`);
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
         if (!response.ok) throw new Error('Failed to fetch bids');
         return response.json();
     },
@@ -100,6 +107,32 @@ export const api = {
 
         const response = await fetch(url);
         if (!response.ok) throw new Error('Search failed');
+        return response.json();
+    },
+    registerUser: async (body) => {
+        console.log({body})
+        const response = await fetch(`${API_BASE_URL}/register`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body : JSON.stringify(body),
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Registration failed: ${errorText}`);
+        }
+        return response.json();
+    },
+    loginUser: async (body) => {
+        console.log({body})
+        const response = await fetch(`${API_BASE_URL}/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body : JSON.stringify(body),
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Login failed: ${errorText}`);
+        }
         return response.json();
     }
 };

@@ -1,46 +1,78 @@
-import { Bookmark, Save } from "lucide-react";
+import { Bookmark } from "lucide-react";
 
-export function BidTile() {
-    let keywords = ["Electrical", "UPS", "Services"];
+export function BidTile({ data, setModal }: { data?: any; setModal?: any }) {
+  const keywords = ["Electrical", "UPS", "Services"];
+
   return (
-    <div className="bg-white rounded-2xl shadow-md p-4 mb-4 cursor-pointer transform transition duration-300 hover:scale-[1.02]">
-      <div className="flex justify-between items-center mb-3">
-        {/* <div>
-          <p className="text-gray-600 text-sm">Bid No.</p>
-          <a className="text-blue-600 font-semibold hover:underline" href="#" target="_blank">
-            GEM/2025/B/6560163
-          </a>
+    <div
+      className="
+        bg-black
+        border border-[#1F2937]
+        rounded-2xl
+        p-5
+        transition-all duration-300
+        hover:border-[#76B900]
+        hover:shadow-[0_0_0_1px_#76B900]
+        hover:-translate-y-1
+        cursor-pointer
+        backdrop-blur-md bg-white/5
+
+      "
+    >
+      {/* Header */}
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <p className="text-xs text-gray-400">Bid ID</p>
+          <h4
+            onClick={() =>
+              setModal(
+                `https://bidplus.gem.gov.in/showbidDocument/${data?.b_id_parent?.[0]}`
+              )
+            }
+            className="text-lg font-semibold text-[#76B900] hover:underline truncate max-w-[260px]"
+          >
+            {data?.b_bid_number?.[0] || "N/A"}
+          </h4>
         </div>
 
-        <div>
-          <p className="text-gray-600 text-sm">RA No.</p>
-          <a className="text-blue-600 font-semibold hover:underline" href="#" target="_blank">
-            GEM/2025/R/587302
-          </a>
-        </div> */}
-
-<div>
-
-        <h4>
-
-            <span className="text-gray-600 text-sm">Bid Title: </span>
-            <span className="text-yellow-600 font-semibold hover:underline">Online UPS (V2) - ----</span>
-        </h4>
-</div>
-<div>
-    <Bookmark className="text-gray-500 hover:text-gray-800" />
-</div>
+        <Bookmark
+          className="
+            text-gray-500
+            hover:text-[#76B900]
+            transition
+          "
+        />
       </div>
 
-      <div className="border-t pt-3 text-sm text-gray-700">
-        <p><strong>Items:</strong> Custom Bid for Services - ----</p>
-        <p><strong>Quantity:</strong> 1</p>
-        <p><strong>Department:</strong> Ministry of Steel / Steel Authority of India Limited</p>
-       
-        <div className="flex justify-evenly gap-2 mt-2 text-sm bg-gray-50 p-2 rounded-lg">
-           {keywords.map((keyword, index) => (
-        <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs" key={index}>{keyword} </span>    ))} 
+      {/* Body */}
+      <div className="space-y-3 text-sm text-gray-300">
+        <p>
+          <span className="text-gray-400">Department:</span>{" "}
+          {data?.ba_official_details_deptName?.[0] || "N/A"}
+        </p>
 
+        <p className="line-clamp-2">
+          <span className="text-gray-400">Items:</span>{" "}
+          {data?.bd_category_name?.[0] || "N/A"}
+        </p>
+
+        {/* Tags */}
+        <div className="flex flex-wrap gap-2 pt-2">
+          {keywords.map((k, i) => (
+            <span
+              key={i}
+              className="
+                text-xs
+                px-2 py-1
+                rounded-md
+                border border-[#1F2937]
+                text-[#76B900]
+                bg-[#0B0F14]
+              "
+            >
+              {k}
+            </span>
+          ))}
         </div>
       </div>
     </div>
