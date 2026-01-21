@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Head from 'next/head';
 import LoginView from '../components/LoginView';
 import ChoiceView from '../components/ChoiceView';
@@ -9,12 +9,13 @@ import CleanBackground from '../components/CleanBackground';
 import { api } from '../utils/api';
 import MainDashboard from './components/MainDashboard';
 import PdfViewer from './components/PdfViewer';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  const [currentView, setCurrentView] = useState('login');
+  const [currentView, setCurrentView] = useState('mainDashboard');
   const [collections, setCollections] = useState([]);
   const [activeCollectionId, setActiveCollectionId] = useState(null);
-
+const navigate = useRouter();
   // useEffect(() => {
   //   const fetchCollections = async () => {
   //     try {
@@ -56,7 +57,9 @@ export default function Home() {
 
   //   fetchCollections();
   // }, []);
-
+useEffect(() => {
+  currentView==='register' &&  navigate.push('/register');
+}, [currentView]);
   const handleLogin = () => setCurrentView('mainDashboard');
   const handleChoice = (choice) => setCurrentView(choice);
 
@@ -66,7 +69,7 @@ export default function Home() {
   };
 
   const goToDashboard = () => setCurrentView('dashboard');
-  const handleLogout = () => setCurrentView('login');
+  const handleLogout = () => setCurrentView('register');
 const SAMPLE_PDF_URL = 'https://file-examples.com/storage/febb3a50a7693904695a3eb/2017/10/file-sample_150kB.pdf';
 
   return (

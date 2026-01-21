@@ -1,4 +1,4 @@
-// components/LoginView.js
+"use client";
 import React, { useState } from 'react';
 import { LayoutGrid, Loader2, LogIn } from 'lucide-react';
 import styles from './LoginView.module.css';
@@ -25,6 +25,7 @@ const handleLogin = async (e) => {
         }
     };
     return (
+        
         <div className={styles.container}>
             <div className={styles.card}>
                 <div className={styles.logo}>

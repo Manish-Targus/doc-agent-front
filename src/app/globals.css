@@ -22,3 +22,6 @@ body {
       transparent,
       rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
+.profile-input {
+  @apply px-2 py-1 border border-gray-300 rounded text-sm outline-none focus:border-gray-500;
+}

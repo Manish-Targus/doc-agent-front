@@ -1,39 +1,66 @@
 import React, { useEffect, useState } from "react";
 import { BidTile } from "./Dashboard/BidTile";
 import { Modal } from "./Modal";
-import SamplePdfViewer from "./SamplePdfViewer";
 import PdfViewer from "./PdfViewer";
-
-// export function DashboardLayout({ sidebar, content }: { sidebar: React.ReactNode; content: React.ReactNode }) {
-//   return (
-//     <div className="flex w-full h-screen bg-gray-100">
-//       {/* Sidebar */}
-//       <aside className="  w-full bg-white shadow-xl p-4 overflow-y-auto border-r border-gray-200">
-//         {sidebar}
-//       </aside>
-
-//       {/* Main Content */}
-//       {/* <main className="flex-1 p-6 overflow-y-auto">{content}</main> */}
-//     </div>
-//   );
-// }
-import { api } from '../../utils/api';
 import ContentLoader from "react-content-loader";
-import { Pagination } from "./utils/Pagination";
+import { api } from "../../utils/api";
 
-const SAMPLE_PDF_URL = "/GeM-Bidding-8557175.pdf"
-export default function Dashboard() {
-  const [collections, setCollections] = useState<Array<any>>([]);
+const SkeletonCard = () => (
+  <ContentLoader
+    speed={1.2}
+    width="100%"
+    height={190}
+    viewBox="0 0 350 190"
+    backgroundColor="#1F2937"
+    foregroundColor="#2B3441"
+  >
+    <rect x="20" y="18" rx="4" ry="4" width="60" height="10" />
+    <rect x="20" y="35" rx="6" ry="6" width="180" height="16" />
+    <rect x="300" y="20" rx="4" ry="4" width="20" height="20" />
+    <rect x="20" y="70" rx="4" ry="4" width="260" height="12" />
+    <rect x="20" y="92" rx="4" ry="4" width="300" height="12" />
+    <rect x="20" y="110" rx="4" ry="4" width="240" height="12" />
+    <rect x="20" y="140" rx="6" ry="6" width="60" height="22" />
+    <rect x="90" y="140" rx="6" ry="6" width="50" height="22" />
+    <rect x="150" y="140" rx="6" ry="6" width="70" height="22" />
+  </ContentLoader>
+);
+
+const Section = ({
+  title,
+  collections,
+  setModal
+}: {
+  title: string;
+  collections: any[];
+  setModal: (v: any) => void;
+}) => (
+  <section className="mt-14">
+    <h3 className="text-center text-2xl font-semibold text-black tracking-wide mb-6">
+      {title}
+    </h3>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
+      {collections.length > 0
+        ? collections.map((data, index) => (
+            <BidTile key={index} data={data} setModal={setModal} />
+          ))
+        : [...Array(25)].map((_, i) => <SkeletonCard key={i} />)}
+    </div>
+  </section>
+);
+
+export default function MainDashboard() {
+  const [collections, setCollections] = useState<any[]>([]);
   const [modal, setModal] = useState<string | false>(false);
-  const [page,setPage]=useState(1);
-  const [totalPages,setTotalPages]=useState(100);
+  const [page, setPage] = useState(1);
+
   useEffect(() => {
     const fetchCollections = async () => {
       try {
         setCollections([]);
-        const data = await api.getBids({page});
+        const data = await api.getBids({ page });
         setCollections(Array.isArray(data?.data) ? data.data : []);
-        setTotalPages( Math.ceil((data?.totalPages || 0) ));
       } catch (error) {
         console.error(error);
       }
@@ -43,191 +70,50 @@ export default function Dashboard() {
 
   return (
     <>
-      <div className=" bg-[#0B0F14] p-6">
+      <div className="min-h-screen px-6 py-8">
         {/* Header */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-200 tracking-wide">
-            Bids Dashboard
-          </h2>
-          <br />
-          <h3 className=" capitalize text-center text-3xl text-gray-400">
-           Saved tenders overview
-          </h3>
-        </div>
+    <header className="mb-10 flex items-center justify-between">
+  <div className="text-center w-full">
+    <h1 className="text-3xl font-serif tracking-tight">
+      Bids Dashboard
+    </h1>
+    <p className="text-slate-400 mt-2 font-medium">
+      Centralized tender monitoring & analysis
+    </p>
+  </div>
 
-        {/* Grid */}
-        <div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6 py-4">
-          {collections?.length>0? collections.map((data, index) => (
-            <BidTile key={index} data={data} setModal={setModal} />
-          )):
-         [...new Array(25)].map((_,i)=>(  <ContentLoader
-      speed={1.2}
-      width="100%"
-      height={190}
-      viewBox="0 0 350 190"
-      backgroundColor="#1F2937"
-      foregroundColor="#2B3441"
-      
-    >
-      {/* Bid ID label */}
-      <rect x="20" y="18" rx="4" ry="4" width="60" height="10" />
+  {/* Profile */}
+  <div className="absolute top-8 right-8">
+    <ProfileDropdown />
+  </div>
+</header>
 
-      {/* Bid number */}
-      <rect x="20" y="35" rx="6" ry="6" width="180" height="16" />
+        {/* Sections */}
+        <Section
+          title="Saved Tenders Overview"
+          collections={collections}
+          setModal={setModal}
+        />
 
-      {/* Bookmark icon */}
-      <rect x="300" y="20" rx="4" ry="4" width="20" height="20" />
+        <Section
+          title="GeM Tenders Overview"
+          collections={collections}
+          setModal={setModal}
+        />
 
-      {/* Department */}
-      <rect x="20" y="70" rx="4" ry="4" width="260" height="12" />
+        <Section
+          title="Website 2 Tenders Overview"
+          collections={collections}
+          setModal={setModal}
+        />
 
-      {/* Items (2 lines) */}
-      <rect x="20" y="92" rx="4" ry="4" width="300" height="12" />
-      <rect x="20" y="110" rx="4" ry="4" width="240" height="12" />
-
-      {/* Tags */}
-      <rect x="20" y="140" rx="6" ry="6" width="60" height="22" />
-      <rect x="90" y="140" rx="6" ry="6" width="50" height="22" />
-      <rect x="150" y="140" rx="6" ry="6" width="70" height="22" />
-    </ContentLoader>))
-          }
-        </div>
-</div>
-{/* GEMS */}
-<div className="py-3">
-  
-     <h3 className=" capitalize text-center text-3xl text-gray-400 py-3">
-           GEMS tenders overview
-          </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
-          {collections?.length>0? collections.map((data, index) => (
-            <BidTile key={index} data={data} setModal={setModal} />
-          )):
-         [...new Array(25)].map((_,i)=>(  <ContentLoader
-      speed={1.2}
-      width="100%"
-      height={190}
-      viewBox="0 0 350 190"
-      backgroundColor="#1F2937"
-      foregroundColor="#2B3441"
-      
-    >
-      {/* Bid ID label */}
-      <rect x="20" y="18" rx="4" ry="4" width="60" height="10" />
-
-      {/* Bid number */}
-      <rect x="20" y="35" rx="6" ry="6" width="180" height="16" />
-
-      {/* Bookmark icon */}
-      <rect x="300" y="20" rx="4" ry="4" width="20" height="20" />
-
-      {/* Department */}
-      <rect x="20" y="70" rx="4" ry="4" width="260" height="12" />
-
-      {/* Items (2 lines) */}
-      <rect x="20" y="92" rx="4" ry="4" width="300" height="12" />
-      <rect x="20" y="110" rx="4" ry="4" width="240" height="12" />
-
-      {/* Tags */}
-      <rect x="20" y="140" rx="6" ry="6" width="60" height="22" />
-      <rect x="90" y="140" rx="6" ry="6" width="50" height="22" />
-      <rect x="150" y="140" rx="6" ry="6" width="70" height="22" />
-    </ContentLoader>))
-          }
-        </div>
-
-</div>
-<div className="py-3">
-  
-     <h3 className=" capitalize text-center text-3xl text-gray-400 py-3">
-           Website2 tenders overview
-          </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
-          {collections?.length>0? collections.map((data, index) => (
-            <BidTile key={index} data={data} setModal={setModal} />
-          )):
-         [...new Array(25)].map((_,i)=>(  <ContentLoader
-      speed={1.2}
-      width="100%"
-      height={190}
-      viewBox="0 0 350 190"
-      backgroundColor="#1F2937"
-      foregroundColor="#2B3441"
-      
-    >
-      {/* Bid ID label */}
-      <rect x="20" y="18" rx="4" ry="4" width="60" height="10" />
-
-      {/* Bid number */}
-      <rect x="20" y="35" rx="6" ry="6" width="180" height="16" />
-
-      {/* Bookmark icon */}
-      <rect x="300" y="20" rx="4" ry="4" width="20" height="20" />
-
-      {/* Department */}
-      <rect x="20" y="70" rx="4" ry="4" width="260" height="12" />
-
-      {/* Items (2 lines) */}
-      <rect x="20" y="92" rx="4" ry="4" width="300" height="12" />
-      <rect x="20" y="110" rx="4" ry="4" width="240" height="12" />
-
-      {/* Tags */}
-      <rect x="20" y="140" rx="6" ry="6" width="60" height="22" />
-      <rect x="90" y="140" rx="6" ry="6" width="50" height="22" />
-      <rect x="150" y="140" rx="6" ry="6" width="70" height="22" />
-    </ContentLoader>))
-          }
-        </div>
-
-</div>
-<div className="py-3">
-  
-     <h3 className=" capitalize text-center text-3xl text-gray-400 py-3">
-           Website3 tenders overview
-          </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6">
-          {collections?.length>0? collections.map((data, index) => (
-            <BidTile key={index} data={data} setModal={setModal} />
-          )):
-         [...new Array(25)].map((_,i)=>(  <ContentLoader
-      speed={1.2}
-      width="100%"
-      height={190}
-      viewBox="0 0 350 190"
-      backgroundColor="#1F2937"
-      foregroundColor="#2B3441"
-      
-    >
-      {/* Bid ID label */}
-      <rect x="20" y="18" rx="4" ry="4" width="60" height="10" />
-
-      {/* Bid number */}
-      <rect x="20" y="35" rx="6" ry="6" width="180" height="16" />
-
-      {/* Bookmark icon */}
-      <rect x="300" y="20" rx="4" ry="4" width="20" height="20" />
-
-      {/* Department */}
-      <rect x="20" y="70" rx="4" ry="4" width="260" height="12" />
-
-      {/* Items (2 lines) */}
-      <rect x="20" y="92" rx="4" ry="4" width="300" height="12" />
-      <rect x="20" y="110" rx="4" ry="4" width="240" height="12" />
-
-      {/* Tags */}
-      <rect x="20" y="140" rx="6" ry="6" width="60" height="22" />
-      <rect x="90" y="140" rx="6" ry="6" width="50" height="22" />
-      <rect x="150" y="140" rx="6" ry="6" width="70" height="22" />
-    </ContentLoader>))
-          }
-        </div>
-
-</div>
+        <Section
+          title="Website 3 Tenders Overview"
+          collections={collections}
+          setModal={setModal}
+        />
       </div>
 
-
-      {/* <Pagination page={page} totalPages={totalPages} onPageChange={setPage} /> */}
       {/* Modal */}
       <Modal isOpen={!!modal} onClose={() => setModal(false)}>
         <div className="w-[900px] h-screen bg-black rounded-xl overflow-hidden">
@@ -237,4 +123,98 @@ export default function Dashboard() {
     </>
   );
 }
+import { User, LogOut } from "lucide-react";
+
+const ProfileDropdown = () => {
+  const [open, setOpen] = useState(false);
+  const [hoveringList, setHoveringList] = useState(false);
+
+  const closeMenu = () => setOpen(false);
+
+  const handleLogout = () => {
+    closeMenu();
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.reload();
+     document.cookie.split(";").forEach(cookie => {
+    const name = cookie.split("=")[0].trim();
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+  });
+  };
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => {
+        // setOpen(false);
+        setHoveringList(false);
+      }}
+    >
+      {/* Avatar */}
+      <div
+        className="
+          w-11 h-11 rounded-full
+          bg-gradient-to-br from-yellow-400 to-yellow-200
+          flex items-center justify-center
+          cursor-pointer shadow-md
+          transition-all duration-300
+          hover:scale-110 hover:shadow-yellow-300/60
+        "
+      >
+        <span className="text-black font-bold text-sm">M</span>
+      </div>
+
+      {/* Dropdown */}
+      <div
+        className={`
+          absolute right-0 mt-4 w-36
+          bg-white rounded-2xl border border-gray-200
+          shadow-xl z-50
+          transform transition-all duration-300 ease-out
+          ${open
+            ? "opacity-100 scale-100 translate-y-0"
+            : "opacity-0 scale-95 -translate-y-3 pointer-events-none"}
+        `}
+        onMouseEnter={() => setHoveringList(true)}
+        onMouseLeave={() => {setHoveringList(false)
+          setOpen(false);
+        }}
+      >
+        <div className="flex flex-col p-2 gap-1">
+          {/* Profile */}
+          <a href="/profile" className={`
+              flex items-center justify-center h-11 rounded-xl
+              transition-all duration-300
+              ${hoveringList ? "opacity-40" : "opacity-100"}
+              hover:opacity-100 hover:bg-gray-100
+              hover:scale-105
+              `}>
+
+          <button
+            onClick={closeMenu}
+            
+              >
+            <User size={18} className="text-gray-700" />
+          </button>
+            </a>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className={`
+              flex items-center justify-center h-11 rounded-xl
+              transition-all duration-300
+              ${hoveringList ? "opacity-40" : "opacity-100"}
+              hover:opacity-100 hover:bg-red-50
+              hover:scale-105
+            `}
+          >
+            <LogOut size={18} className="text-red-600" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 

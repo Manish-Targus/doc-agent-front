@@ -29,6 +29,6 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/middleware.js"  ],
   "exclude": ["node_modules"]
 }
