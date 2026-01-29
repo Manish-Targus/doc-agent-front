@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { api } from '../../utils/api';
+import { Trash2Icon } from 'lucide-react';
+import Swal from 'sweetalert2';
+import Link from 'next/link';
 // --- Types ---
 interface User {
   id: number;
@@ -9,7 +12,7 @@ interface User {
   name: string;
   designation?: string;
   keywords: string[];
-  is_active: boolean;
+  active: boolean;
 }
 
 const UserManagement = () => {
@@ -17,17 +20,17 @@ const UserManagement = () => {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const fetchUser = async()=>{ await api.getUserList().then((data)=>{setUsers(data)}).catch((err)=>{console.error("Failed to fetch users:", err)});}
   const updateUser = async(id:number,updatedData:Partial<User>)=>{ await  api.updateUser({ data: {updatedData,id} }).then((data)=>{console.log("User updated:",data)}).catch((err)=>{console.error("Failed to update user:", err)});}
+  const changeStatusUser = async(id:number,status:boolean)=>{ await  api.changeUserStatus({status,id}).then((data)=>{console.log("User status changed:",data)}).catch((err)=>{console.error("Failed to change user status:", err)});
+  fetchUser()
+}
+const deleteItem = async(id:number)=>{ await api.deleteUser(id).then((data)=>{console.log("User deleted:",data);fetchUser();}).catch((err)=>{console.error("Failed to delete user:", err)});
+fetchUser();
+}
   useEffect(() => {
  
   fetchUser();
 }, []);
-  useEffect(() => {
-    const mockData: User[] = [
-      { id: 1, email: "admin@corp.com", name: "Sarah Jenkins", designation: "System Architect", keywords: ["Cloud", "Security"], is_active: true },
-      { id: 2, email: "dev@corp.com", name: "Mike Ross", designation: "Frontend Lead", keywords: ["React", "Tailwind"], is_active: false },
-    ];
-    // setUsers(mockData);
-  }, []);
+                                                                  
 
   const handleUpdate = async (id: number, updatedData: Partial<User>) => {
    updateUser(id,updatedData);
@@ -47,7 +50,12 @@ const UserManagement = () => {
             <p className="text-slate-500 mt-1">Manage users and permissions with glass-level clarity.</p>
           </div>
           <div className="px-6 py-3 bg-white/40 backdrop-blur-md border border-white/60 rounded-2xl shadow-sm text-sm font-semibold">
-            ⚡ {users.length} Total Users
+            ⚡ {users?.length} Total Users
+            <br />
+            <br />
+            <Link href={"/register"}>
+            <button className='px-4 py-3 bg-yellow-400 text-yellow-900 rounded-2xl font-black text-sm shadow-lg shadow-yellow-200 hover:scale-[1.02] active:scale-95 transition-all '>Add User</button>
+            </Link>
           </div>
         </div>
 
@@ -64,12 +72,12 @@ const UserManagement = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/40">
-                {users.map(user => (
+                {users?.map(user => (
                   <tr key={user.id} className="group hover:bg-white/40 transition-all duration-300">
                     <td className="p-6">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-yellow-900 shadow-inner">
-                          {user.name[0]}
+                          {user.name[0]} {JSON.stringify(user.id)}
                         </div>
                         <div>
                           <div className="font-bold text-slate-900">{user.name}</div>
@@ -98,14 +106,37 @@ const UserManagement = () => {
                           Edit
                         </button>
                         <button 
-                          onClick={() => handleUpdate(user.id, { is_active: !user.is_active })}
+                          onClick={() => changeStatusUser(
+                            user.id, 
+                            !user.active
+                          ) 
+                            // handleUpdate(user.id, { active: !user.active })
+                          }
                           className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                            user.is_active 
+                            user.active 
                             ? 'bg-slate-900 text-white hover:bg-slate-700' 
                             : 'bg-yellow-400 text-yellow-900 hover:bg-yellow-300'
                           }`}
                         >
-                          {user.is_active ? 'Suspend' : 'Activate'}
+                          {user.active ? 'Suspend' : 'Activate'}
+                        </button>
+                        <button onClick={()=> {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Perform delete action
+            deleteItem(user.id);
+        }
+    });}}>
+                          
+                        <Trash2Icon/>
                         </button>
                       </div>
                     </td>

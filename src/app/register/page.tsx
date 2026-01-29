@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Loader2,
   LayoutGrid,
@@ -8,6 +8,7 @@ import {
   X
 } from "lucide-react";
 import { api } from "../../utils/api";
+import Swal from "sweetalert2";
 
 interface RegistrationFormData {
   name: string;
@@ -16,6 +17,14 @@ interface RegistrationFormData {
   confirmPassword: string;
   designation?: string;
   keywords: string[];
+}
+
+interface UserProfile {
+  name: string;
+  email: string;
+  designation?: string;
+  keywords: string[];
+  role?: string;
 }
 
 export default function Register() {
@@ -27,12 +36,55 @@ export default function Register() {
     designation: "",
     keywords: []
   });
-
+  const [user, setUser] = useState({} as UserProfile);
   const [currentKeyword, setCurrentKeyword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [passwordStrength, setPasswordStrength] = useState(0);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const data = await api.getProfile();
+        const userProfile = {
+          name: data.user.name,
+          email: data.user.email,
+          designation: data.user.designation,
+          keywords: data.user.keywords || [],
+          role: data.user.role
+        };
+        console.log({userProfile})
+        console.log(data)
+        setUser(userProfile);
+      } catch (error) {
+        console.error("Failed to fetch profile:", error);
+        // Fallback to default values if API fails
+        const defaultProfile = {
+          name: "Error",
+          email: "",
+          designation: "",
+          keywords: [""],
+        };
+        setUser(defaultProfile);
+      }
+    };
 
+    fetchProfile();
+  }, []);
+  useEffect(() => {
+    console.log({user},{role:user?.role})
+
+    if(user?.role&& user?.role !== 'admin'){ {
+      Swal.fire({
+        title: "Access Denied",
+        text: "You do not have permission to access this page.",
+        icon: "error",
+        confirmButtonText: "OK",
+        timer: 3000
+      }).then(() => {
+        window.location.href = "/";
+      });
+    }
+  }}, [user]);
   const checkPasswordStrength = (password: string) => {
     let strength = 0;
     if (password.length >= 8) strength++;
@@ -222,89 +274,85 @@ export default function Register() {
                 />
               </div>
             )}
-<div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-  <p className="text-sm font-bold text-slate-800 mb-3">
-    Password Requirements
-  </p>
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <p className="text-sm font-bold text-slate-800 mb-3">
+                Password Requirements
+              </p>
 
-  <div className="grid grid-cols-2 gap-3 text-sm">
-    <div className="flex items-center gap-2">
-      <span
-        className={`w-3 h-3 rounded-full ${
-          formData.password.length >= 8
-            ? "bg-amber-400"
-            : "bg-slate-300"
-        }`}
-      />
-      <span
-        className={
-          formData.password.length >= 8
-            ? "text-slate-900 font-medium"
-            : "text-slate-500"
-        }
-      >
-        8+ characters
-      </span>
-    </div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-3 h-3 rounded-full ${formData.password.length >= 8
+                        ? "bg-amber-400"
+                        : "bg-slate-300"
+                      }`}
+                  />
+                  <span
+                    className={
+                      formData.password.length >= 8
+                        ? "text-slate-900 font-medium"
+                        : "text-slate-500"
+                    }
+                  >
+                    8+ characters
+                  </span>
+                </div>
 
-    <div className="flex items-center gap-2">
-      <span
-        className={`w-3 h-3 rounded-full ${
-          /[A-Z]/.test(formData.password)
-            ? "bg-amber-400"
-            : "bg-slate-300"
-        }`}
-      />
-      <span
-        className={
-          /[A-Z]/.test(formData.password)
-            ? "text-slate-900 font-medium"
-            : "text-slate-500"
-        }
-      >
-        Uppercase letter
-      </span>
-    </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-3 h-3 rounded-full ${/[A-Z]/.test(formData.password)
+                        ? "bg-amber-400"
+                        : "bg-slate-300"
+                      }`}
+                  />
+                  <span
+                    className={
+                      /[A-Z]/.test(formData.password)
+                        ? "text-slate-900 font-medium"
+                        : "text-slate-500"
+                    }
+                  >
+                    Uppercase letter
+                  </span>
+                </div>
 
-    <div className="flex items-center gap-2">
-      <span
-        className={`w-3 h-3 rounded-full ${
-          /[0-9]/.test(formData.password)
-            ? "bg-amber-400"
-            : "bg-slate-300"
-        }`}
-      />
-      <span
-        className={
-          /[0-9]/.test(formData.password)
-            ? "text-slate-900 font-medium"
-            : "text-slate-500"
-        }
-      >
-        Number
-      </span>
-    </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-3 h-3 rounded-full ${/[0-9]/.test(formData.password)
+                        ? "bg-amber-400"
+                        : "bg-slate-300"
+                      }`}
+                  />
+                  <span
+                    className={
+                      /[0-9]/.test(formData.password)
+                        ? "text-slate-900 font-medium"
+                        : "text-slate-500"
+                    }
+                  >
+                    Number
+                  </span>
+                </div>
 
-    <div className="flex items-center gap-2">
-      <span
-        className={`w-3 h-3 rounded-full ${
-          /[^A-Za-z0-9]/.test(formData.password)
-            ? "bg-amber-400"
-            : "bg-slate-300"
-        }`}
-      />
-      <span
-        className={
-          /[^A-Za-z0-9]/.test(formData.password)
-            ? "text-slate-900 font-medium"
-            : "text-slate-500"
-        }
-      >
-        Special character
-      </span>
-    </div>
-  </div>
-</div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`w-3 h-3 rounded-full ${/[^A-Za-z0-9]/.test(formData.password)
+                        ? "bg-amber-400"
+                        : "bg-slate-300"
+                      }`}
+                  />
+                  <span
+                    className={
+                      /[^A-Za-z0-9]/.test(formData.password)
+                        ? "text-slate-900 font-medium"
+                        : "text-slate-500"
+                    }
+                  >
+                    Special character
+                  </span>
+                </div>
+              </div>
+            </div>
             {/* Submit */}
             <button
               disabled={isSubmitting}

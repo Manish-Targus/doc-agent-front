@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 
 export const API_BASE_URL = 'http://192.168.1.245:9002';
-
 // Cookie helper functions
 export const getAuthToken = () => {
   if (typeof document !== 'undefined') {
@@ -101,11 +100,27 @@ export const api = {
     if (!response.ok) throw new Error('Failed to fetch collections');
     return response.json();
   },
-  
-  getBids: async ({page}) => {
+
+  getBids: async ({page,byType,highBidValue,bidStatusType,byEndDate}) => {
+    console.log({byEndDate})
     const url = new URL(`${API_BASE_URL}/gem-bids`);
     url.searchParams.append('page', page || 1);
-    
+    if(byType){
+      url.searchParams.append('byType', byType);
+    }
+    if(highBidValue){
+      url.searchParams.append('highBidValue', highBidValue);
+    }
+    if(bidStatusType){
+      url.searchParams.append('bidStatusType', bidStatusType);
+    }
+    if(byEndDate?.from){
+
+        url.searchParams.append('fromDate', JSON.stringify(byEndDate.from));
+    }
+    if(byEndDate?.to){
+        url.searchParams.append('toDate', JSON.stringify(byEndDate.to));
+    }
     const response = await authFetch(url, {
       method: 'GET',
     });
@@ -115,16 +130,26 @@ export const api = {
   },
 
    getUserList: async () => {
+
     const url = new URL(`${API_BASE_URL}/all-users`);
     // url.searchParams.append('page', page || 1);
     
     const response = await authFetch(url, {
       method: 'GET',
     });
-    
+    console.log({response})
+    if(response.status==403){
+     Swal.fire({
+      icon: 'error',
+      title: 'Access Denied',
+      text: 'You do not have permission to access this resource.',
+    }).then(() => {
+window.location.href = '/';    });
     if (!response.ok) throw new Error('Failed to fetch Users');
     return response.json();
-  },
+  }
+  return response.json();
+},
   updateUser: async ({data}) => {
     const url = new URL(`${API_BASE_URL}/update/${data.id}`);
     
@@ -227,6 +252,34 @@ export const api = {
     }
     return response.json();
   },
+    changeUserStatus: async (body) => {
+      console.log(body)
+    const response = await fetch(`${API_BASE_URL}/change-status/${body.id}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Status Change failed: ${errorText}`);
+    }
+    return response.json();
+  },
+    deleteUser: async (id) => {
+    const response = await fetch(`${API_BASE_URL}/delete/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Status Change failed: ${errorText}`);
+    }
+    return response.json();
+  },
   
   loginUser: async (body) => {
     const response = await fetch(`${API_BASE_URL}/login`, {
@@ -304,9 +357,24 @@ export const api = {
     }
   }
 };
+uploadPDF: async (body) => {
+    const response = await authFetch(`${API_BASE_URL}/pdf/process`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`PDF upload failed: ${errorText}`);
+    }
+    return response.json();
+  }
 // Alternative: Axios-based implementation (if you prefer)
 import axios from 'axios';
+import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -342,5 +410,6 @@ export const axiosApi = {
   getBids: (params) => axiosInstance.get('/gem-bids', { params }),
   getCollections: () => axiosInstance.get('/collections'),
   login: (data) => axiosInstance.post('/login', data),
+  uploadPDF: (data) => axiosInstance.post('/pdf/process', data),
   // ... other methods
 };

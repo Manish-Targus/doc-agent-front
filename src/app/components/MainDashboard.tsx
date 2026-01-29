@@ -1,9 +1,11 @@
+// Updated MainDashboard.tsx
 import React, { useEffect, useState } from "react";
 import { BidTile } from "./Dashboard/BidTile";
 import { Modal } from "./Modal";
 import PdfViewer from "./PdfViewer";
 import ContentLoader from "react-content-loader";
 import { api } from "../../utils/api";
+import { Filters, FilterState } from "../components/Dashboard/Filters"; // Adjust path as needed
 
 const SkeletonCard = () => (
   <ContentLoader
@@ -52,66 +54,243 @@ const Section = ({
 
 export default function MainDashboard() {
   const [collections, setCollections] = useState<any[]>([]);
+  const [filteredCollections, setFilteredCollections] = useState<any[]>([]);
   const [modal, setModal] = useState<string | false>(false);
   const [page, setPage] = useState(1);
+  const [activeFilters, setActiveFilters] = useState<FilterState | null>(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   useEffect(() => {
     const fetchCollections = async () => {
       try {
         setCollections([]);
-        const data = await api.getBids({ page });
-        setCollections(Array.isArray(data?.data) ? data.data : []);
+        const data = await api.getBids({ page,byType:activeFilters?.byType||'',highBidValue:activeFilters?.highBidValue||'',bidStatusType:activeFilters?.bidStatusType||'' ,byEndDate:{from:activeFilters?.fromEndDate,to:activeFilters?.toEndDate}});
+        const fetchedData = Array.isArray(data?.data) ? data.data : [];
+        setCollections(fetchedData);
+        setFilteredCollections(fetchedData);
       } catch (error) {
         console.error(error);
       }
     };
     fetchCollections();
-  }, [page]);
+    console.log(activeFilters)
+  }, [page,activeFilters]);
 
+  // Apply filters when activeFilters change
+  useEffect(() => {
+    if (!activeFilters || collections.length === 0) {
+      setFilteredCollections(collections);
+      return;
+    }
+
+    let filtered = [...collections];
+
+    // Apply bid type filters
+    if (activeFilters.all) {
+      // Show all if "All" is selected
+    } else {
+      const bidTypes = [
+        { key: 'product', value: 'Product' },
+        { key: 'service', value: 'Service' },
+        { key: 'bidToRA', value: 'BidToRA' },
+        { key: 'custom', value: 'Custom' },
+        { key: 'boq', value: 'BOQ' },
+        { key: 'rcbid', value: 'RCBid' },
+      ];
+
+      const selectedTypes = bidTypes.filter(type => 
+        activeFilters[type.key as keyof FilterState]
+      );
+
+      if (selectedTypes.length > 0) {
+        filtered = filtered.filter(item => 
+          selectedTypes.some(type => 
+            item.type?.toLowerCase() === type.value.toLowerCase() || 
+            item.category?.toLowerCase() === type.value.toLowerCase()
+          )
+        );
+      }
+    }
+
+    // Apply high value filter
+    if (activeFilters.highValue) {
+      filtered = filtered.filter(item => 
+        item.value >= 20000000 || item.highValue === true
+      );
+    }
+
+    // Apply ongoing bids filter
+    if (activeFilters.ongoing_bids) {
+      filtered = filtered.filter(item => 
+        item.status === 'ongoing' || item.isActive === true
+      );
+    }
+
+    // Apply bid status filters
+    if (activeFilters.bidrastatus) {
+      const statuses = [
+        { key: 'tech_evaluated', value: 'Technical Evaluated' },
+        { key: 'fin_evaluated', value: 'Financial Evaluated' },
+        { key: 'bid_awarded', value: 'Awarded' },
+      ];
+
+      const selectedStatuses = statuses.filter(status => 
+        activeFilters[status.key as keyof FilterState]
+      );
+
+      if (selectedStatuses.length > 0) {
+        filtered = filtered.filter(item => 
+          selectedStatuses.some(status => 
+            item.status?.toLowerCase().includes(status.value.toLowerCase()) ||
+            item.evaluationStatus?.toLowerCase().includes(status.value.toLowerCase())
+          )
+        );
+      }
+    }
+
+    // Apply date filters
+    if (activeFilters.fromEndDate) {
+      const fromDate = new Date(activeFilters.fromEndDate);
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.endDate || item.closingDate);
+        return itemDate >= fromDate;
+      });
+    }
+
+    if (activeFilters.toEndDate) {
+      const toDate = new Date(activeFilters.toEndDate);
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.endDate || item.closingDate);
+        return itemDate <= toDate;
+      });
+    }
+
+    setFilteredCollections(filtered);
+  }, [activeFilters, collections]);
+
+  const handleFilterChange = (filters: FilterState) => {
+    setActiveFilters(filters);
+  };
+useEffect(() => {
+    // Close filter sidebar on larger screens
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsFilterOpen(true);
+      }
+      else {        setIsFilterOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  useEffect(() => {
+
+    console.log("Active Filters Updated:", activeFilters);
+  }, [activeFilters]);
   return (
     <>
       <div className="min-h-screen px-6 py-8">
-        {/* Header */}
-    <header className="mb-10 flex items-center justify-between">
-  <div className="text-center w-full">
-    <h1 className="text-3xl font-serif tracking-tight">
-      Bids Dashboard
-    </h1>
-    <p className="text-slate-400 mt-2 font-medium">
-      Centralized tender monitoring & analysis
-    </p>
-  </div>
+        {/* Header with Filter Toggle */}
+        <header className="mb-10">
+          <div className="flex items-center justify-between mb-6">
+            <div className="text-center flex-1">
+              <h1 className="text-3xl font-serif tracking-tight">
+                Bids Dashboard
+              </h1>
+              <p className="text-slate-400 mt-2 font-medium">
+                Centralized tender monitoring & analysis
+              </p>
+            </div>
 
-  {/* Profile */}
-  <div className="absolute top-8 right-8">
-    <ProfileDropdown />
-  </div>
-</header>
+            {/* Filter Toggle for Mobile */}
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className="lg:hidden flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              Filters
+            </button>
 
-        {/* Sections */}
-        <Section
-          title="Saved Tenders Overview"
-          collections={collections}
-          setModal={setModal}
-        />
+            {/* Profile */}
+            <div className="absolute top-8 right-8">
+              <ProfileDropdown />
+            </div>
+          </div>
 
-        <Section
-          title="GeM Tenders Overview"
-          collections={collections}
-          setModal={setModal}
-        />
+          {/* Main Content with Sidebar */}
+          <div className="flex gap-6">
+            {/* Filters Sidebar */}
+            <div className={`${isFilterOpen ? 'block' : 'hidden'} lg:block`}>
+              <Filters onFilterChange={handleFilterChange} />
+            </div>
 
-        <Section
-          title="Website 2 Tenders Overview"
-          collections={collections}
-          setModal={setModal}
-        />
+            {/* Main Content */}
+            <div className="flex-1">
+              {/* Active Filters Summary */}
+              {activeFilters && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-gray-700">Active Filters:</h4>
+                    <span className="text-sm text-blue-600">
+                      {filteredCollections.length} results
+                    </span>
+                  </div>
+                  {/* You can add more detailed filter summary here */}
+                </div>
+              )}
 
-        <Section
-          title="Website 3 Tenders Overview"
-          collections={collections}
-          setModal={setModal}
-        />
+              {/* Sections */}
+              <Section
+                title="Saved Tenders Overview"
+                collections={filteredCollections}
+                setModal={setModal}
+              />
+
+              <Section
+                title="GeM Tenders Overview"
+                collections={filteredCollections}
+                setModal={setModal}
+              />
+
+              <Section
+                title="Website 2 Tenders Overview"
+                collections={filteredCollections}
+                setModal={setModal}
+              />
+
+              <Section
+                title="Website 3 Tenders Overview"
+                collections={filteredCollections}
+                setModal={setModal}
+              />
+
+              {/* Pagination */}
+              <div className="flex justify-center mt-8">
+                <button
+                  onClick={() => setPage(prev => Math.max(1, prev - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 mx-1 bg-gray-100 rounded-lg disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-4 py-2 mx-1 bg-blue-600 text-white rounded-lg">
+                  {page}
+                </span>
+                <button
+                  onClick={() => setPage(prev => prev + 1)}
+                  className="px-4 py-2 mx-1 bg-gray-100 rounded-lg"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+        </header>
       </div>
 
       {/* Modal */}
@@ -123,6 +302,8 @@ export default function MainDashboard() {
     </>
   );
 }
+
+// ProfileDropdown component remains the same...
 import { User, LogOut } from "lucide-react";
 
 const ProfileDropdown = () => {
@@ -147,7 +328,6 @@ const ProfileDropdown = () => {
       className="relative"
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => {
-        // setOpen(false);
         setHoveringList(false);
       }}
     >
@@ -217,4 +397,3 @@ const ProfileDropdown = () => {
     </div>
   );
 };
-

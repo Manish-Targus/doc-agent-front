@@ -2,7 +2,6 @@ import { Bookmark } from "lucide-react";
 
 export function BidTile({ data, setModal }: { data?: any; setModal?: any }) {
   const keywords = ["Electrical", "UPS", "Services"];
-console.log({data})
   return (
     <div
       className="

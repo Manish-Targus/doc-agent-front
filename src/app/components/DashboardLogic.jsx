@@ -1,4 +1,6 @@
 // components/DashboardView.js
+"use client"
+
 import React, { useState, useRef, useEffect } from 'react';
 import {
     Bot, User, FileText, Search, Send, Upload, Eye, EyeOff, X,

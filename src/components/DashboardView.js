@@ -1,3 +1,4 @@
+"use client"
 import React, { useState, useEffect, useRef } from 'react';
 import {
     LayoutGrid, Bell, Search, FileText, CheckCircle2, X, Trash2, Upload,
